@@ -5,7 +5,7 @@ terraform {
    required_providers {
      azurerm = {
        source = "hashicorp/azurerm"
-       version = "~>2.0"
+       version = "3.0.0"
      }
    }
  }
@@ -27,14 +27,14 @@ terraform {
    resource_group_name = azurerm_resource_group.sg.name
  }
 
- resource "azurerm_subnet" "sg" {
+ resource "azurerm_subnet" "sg1" {
    name                 = "LoadBalancersSubnet"
    resource_group_name  = azurerm_resource_group.sg.name
    virtual_network_name = azurerm_virtual_network.sg.name
    address_prefixes     = ["10.1.1.0/24"]
  }
 
- resource "azurerm_subnet" "sg" {
+ resource "azurerm_subnet" "sg2" {
    name                 = "FrontWebSubnet"
    resource_group_name  = azurerm_resource_group.sg.name
    virtual_network_name = azurerm_virtual_network.sg.name
@@ -72,8 +72,8 @@ terraform {
 
    ip_configuration {
      name                          = "testConfiguration"
-     subnet_id                     = azurerm_subnet.sg.id
-     private_ip_address_allocation = "dynamic"
+     subnet_id                     = azurerm_subnet.sg2.id
+     private_ip_address_allocation = "Dynamic"
    }
  }
 
@@ -88,7 +88,7 @@ terraform {
  }
 
  resource "azurerm_availability_set" "avset" {
-   name                         = "avset"
+   name                         = "magento_avset"
    location                     = azurerm_resource_group.sg.location
    resource_group_name          = azurerm_resource_group.sg.name
    platform_fault_domain_count  = 2
@@ -96,7 +96,7 @@ terraform {
    managed                      = true
  }
 
- resource "azurerm_virtual_machine" "test" {
+ resource "azurerm_virtual_machine" "sg" {
    count                 = 2
    name                  = "MagentoVM${count.index}"
    location              = azurerm_resource_group.sg.location
@@ -113,25 +113,16 @@ terraform {
 
    storage_image_reference {
      publisher = "Canonical"
-     offer     = "UbuntuServer"
-     sku       = "20.04-LTS"
+     offer     = "0001-com-ubuntu-server-focal"
+     sku       = "20_04-lts"
      version   = "latest"
    }
 
    storage_os_disk {
-     name              = "myosdisk${count.index}"
+     name              = "osdisk_magento_${count.index}"
      caching           = "ReadWrite"
      create_option     = "FromImage"
      managed_disk_type = "Standard_LRS"
-   }
-
-   # Optional data disks
-   storage_data_disk {
-     name              = "datadisk_new_${count.index}"
-     managed_disk_type = "Standard_LRS"
-     create_option     = "Empty"
-     lun               = 0
-     disk_size_gb      = "1023"
    }
 
    storage_data_disk {
