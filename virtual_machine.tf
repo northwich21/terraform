@@ -16,7 +16,7 @@ terraform {
  }
 
  resource "azurerm_resource_group" "sg" {
-   name     = "SG-D-Automatic"
+   name     = "SG-D-Automated"
    location = "West Europe"
  }
 
